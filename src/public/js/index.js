@@ -24,7 +24,6 @@ socket.emit('message', 'Me estoy comunicando desde un websocket');
 //     messageInput.value = '';
 // });
 
-
 // socket.on('loadMessages', (messages) => {
 //     messages.forEach((message) => {
 //         const messageElement = document.createElement('p');
