@@ -1,10 +1,12 @@
+<h1>Bienvenido al Chat comunitario</h1>
+<h2>¡Hola, <span id="username"></span>!</h2>
 <div>
-    Todo listo para trabajar con websockets
-
-    {{!-- <input type="text" id="messageInput">
-    <button id="sendMessage">Enviar</button>
-    <div id="messageContainer"></div> --}}
-
+    <input id="chatbox"><!-- chatBox será la caja para poder escribir nuestro mensaje-->
 </div>
+<div>
+    <p id="messageLogs"></p> <!--message log servirá para ir colocando los mensajes que vayan llegando-->
+</div>
+
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="/socket.io/socket.io.js"></script>
 <script src="/js/index.js"></script>
