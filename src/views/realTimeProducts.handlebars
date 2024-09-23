@@ -1,0 +1,36 @@
+<h1>Lista de productos en tiempo real</h1>
+<ul class="products-list" id="products-list">
+  {{#each products}}
+  <li id="product-{{this.id}}">
+    <h3><i class="fa-solid fa-cart-shopping"></i>{{this.title}}</h3>
+    <p><i class="fa-solid fa-list-ul"></i> Descripcion: {{this.description}}</p>
+    <p><i class="fa-solid fa-money-check-dollar"></i> Precio: ${{this.price}}</p>
+    <p><i class="fa-solid fa-boxes-stacked"></i> Stock: {{this.stock}}</p>
+    <button class="btn btn-danger" onclick="deleteProduct('{{this.id}}')">Eliminar</button>
+  </li>
+  {{/each}}
+</ul>
+
+<div class="card mx-auto" style="max-width: 400px; margin-top: 20px;">
+  <div class="card-body">
+    <h2 class="card-title">Agregar un nuevo producto</h2>
+    <form id="addProductForm">
+      <div class="mb-3">
+        <input type="text" id="title" class="form-control" placeholder="Producto" required>
+      </div>
+      <div class="mb-3">
+        <input type="text" id="description" class="form-control" placeholder="Descripción" required>
+      </div>
+      <div class="mb-3">
+        <input type="number" id="price" class="form-control" placeholder="Precio" required>
+      </div>
+      <div class="mb-3">
+        <input type="number" id="stock" class="form-control" placeholder="Stock" required>
+      </div>
+      <button type="submit" class="btn btn-success">Agregar</button>
+    </form>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/index.js"></script>

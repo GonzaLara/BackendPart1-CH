@@ -1,27 +1,28 @@
 import { Router } from "express";
-import fs from 'fs/promises';  // Importar fs con promesas
+import fs from 'fs/promises';
 import path from 'path';
 
 const router = Router();
 const productsFilePath = path.resolve('productos.json');
 
-// Función para leer los productos desde el archivo
+// Funcion para leer los productos desde el archivo
 export const readProductsFile = async () => {
    try {
        const data = await fs.readFile(productsFilePath, 'utf-8');
-       return JSON.parse(data); // Convertir de JSON a objeto
+       return JSON.parse(data);
    } catch (error) {
        console.error('Error al leer el archivo de productos:', error);
-       return []; // Devolver un array vacío si hay un error
+       return [];
    }
 };
 
 export let products = await readProductsFile();
 
-// Función para escribir los productos al archivo
-async function writeProductsFile(products) {
+// Funcion para escribir los productos al archivo
+export const writeProductsFile = async (products) => {
     await fs.writeFile(productsFilePath, JSON.stringify(products, null, 2));
-}
+};
+
 
 // Obtener todos los productos
 router.get('/', async (req, res) => {
@@ -41,7 +42,7 @@ router.get('/:pid', async (req, res) => {
     }
 });
 
-// Agregar nuevo producto
+// Agregar producto
 router.post('/', async (req, res) => {
     const { id, title, description, code, price, status, stock, category } = req.body;
     
@@ -53,15 +54,20 @@ router.post('/', async (req, res) => {
     const existingProduct = products.find(prod => prod.id === id || prod.code === code);
     
     if (existingProduct) {
-        return res.status(400).json({ message: 'Ya existe un producto con ese ID.' });
+        return res.status(400).json({ message: 'Ya existe un producto con ese ID o código.' });
     }
     
     const newProduct = { id, title, description, code, price, status, stock, category };
     products.push(newProduct);
     
     await writeProductsFile(products);
+
+    // Emitir evento cuando se agrega un producto
+    req.app.get('socketio').emit('productAdded', newProduct);
+    
     res.status(201).json(newProduct);
 });
+
 
 // Actualizar producto por ID
 router.put('/:pid', async (req, res) => {
@@ -88,12 +94,18 @@ router.delete('/:pid', async (req, res) => {
     const productIndex = products.findIndex(prod => prod.id === pid);
     
     if (productIndex !== -1) {
+        const deletedProduct = products[productIndex];
         products.splice(productIndex, 1);
         await writeProductsFile(products);
-        res.status(204).end();
+
+        // Emitir evento cuando se elimina un producto
+        req.app.get('socketio').emit('productDeleted', deletedProduct.id);
+        
+        res.status(200).json({ message: 'Producto eliminado exitosamente.' });
     } else {
         res.status(404).json({ message: 'Producto no encontrado.' });
     }
 });
+
 
 export default router;

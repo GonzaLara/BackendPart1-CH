@@ -1,12 +1,1 @@
-[
-  {
-    "id": "1",
-    "title": "Pan Integral",
-    "description": "Muy rico",
-    "code": "P004",
-    "price": 3500,
-    "status": "available",
-    "stock": 5,
-    "category": "comida"
-  }
-]
+[]

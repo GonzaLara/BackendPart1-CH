@@ -7,23 +7,28 @@ import productsRouter from './routes/products.router.js';
 import cartsRouter from './routes/carts.router.js';
 import viewsRouter from './routes/views.router.js';
 
+import { readProductsFile, writeProductsFile } from './routes/products.router.js';
+
 // Importar el constructor de un servidor de sockets
 import { Server } from 'socket.io';
 
 // Inicializar el servidor
 const app = express();
 const httpServer = app.listen(8080, () => {
-    console.log("El servidor esta escuchando.");  // Servidor HTTP
+    console.log("El servidor esta escuchando.");
 })
 
 // Se crea un servidor de sockets que vive dentro del servidor HTTP
-// const socketServer = new Server(httpServer);
 const io = new Server(httpServer);
 
 // Configurar el motor de plantillas Handlebars
-app.engine('handlebars', handlebars.engine());
+app.engine('handlebars', handlebars.engine({
+     defaultLayout: 'main',
+    partialsDir: __dirname + '/views'
+}));
 app.set('views', __dirname + '/views');
 app.set('view engine', 'handlebars');
+app.set('socketio', io);
 
 // La carpeta 'public' es la carpeta de archivos estaticos
 app.use(express.static(__dirname + '/public'));
@@ -37,26 +42,37 @@ app.use('/api/carts', cartsRouter);
 app.use('/api/products', productsRouter);
 app.use('/', viewsRouter);
 
+// Configurar el servidor de sockets
+io.on('connection', (socket) => {
+    console.log('Nuevo cliente conectado');
 
-/* Chat Comunitario */
-let messages = [];  //Los mensajes se almacenarán aquí
+    // Creacion de un producto
+    socket.on('createProduct', async (productData) => {
+        const products = await readProductsFile();
 
-io.on('connection', socket => {
-    console.log("Nuevo cliente conectado");
+        const newProduct = {
+            id: (products.length + 1).toString(),
+            ...productData
+        };
 
-    //Escuchar del servidor los mensajes emitidos con eventos o etiquetas 'message'
-    socket.on('message', (data) => {// Escuchamos el evento con el mismo nombre que el emit del cliente messages
-        messages.push(data); //Guardamos el objeto en la "base"
-        io.emit('messageLogs', messages); //Reenviamos instántaneamente los logs actualizados
+        products.push(newProduct);
+        await writeProductsFile(products);
+
+        // Evento para agregar el producto a todos los clientes conectados
+        io.emit('productAdded', newProduct);
     });
 
-    socket.on('userAuthenticated', user => {
-        //Emitir los logs del chat AL USUARIO que se acaba de autenticar
-        socket.emit('messageLogs', messages);
+    // Eliminacion de un producto
+    socket.on('deleteProduct', async (productId) => {
+        let products = await readProductsFile();
+        const productIndex = products.findIndex(prod => prod.id === productId);
 
-        //Emitir una notificación a todos los demás usuarios
-        socket.broadcast.emit('newUserConnected', user);
+        if (productIndex !== -1) {
+            products.splice(productIndex, 1);
+            await writeProductsFile(products);
+
+            // Evento para eliminar el producto a todos los clientes conectados
+            io.emit('productDeleted', productId);
+        }
     });
-})
-
-/* FIN Chat Comunitario */
+});
