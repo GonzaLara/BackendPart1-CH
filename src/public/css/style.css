@@ -28,7 +28,7 @@ body {
 
 body::before {
     content: '';
-    position: fixed; /* Cambia a fixed para que la imagen permanezca en su lugar */
+    position: fixed;
     top: 0;
     left: 0;
     right: 0;

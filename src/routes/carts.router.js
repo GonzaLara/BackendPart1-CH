@@ -1,17 +1,16 @@
 import { Router } from "express";
 import fs from 'fs/promises';
-import { readProductsFile } from './products.router.js';  // Importar la función de productos
+import { readProductsFile } from './products.router.js';
 
 const router = Router();
 const cartsFilePath = './carrito.json';
 
-// Función para leer los carritos desde el archivo
 async function readCartsFile() {
     try {
         const data = await fs.readFile(cartsFilePath, 'utf-8');
         return JSON.parse(data);
     } catch (error) {
-        return [];  // Si el archivo no existe, retornamos un array vacío
+        return [];
     }
 }
 
